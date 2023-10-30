@@ -1,13 +1,12 @@
-use super::base_node::BaseNode;
-use std::ops::{Add, Div, Mul, Sub};
-pub struct BinaryOperator<T: Add<Output = T> + Sub<Output = T> + Div<Output = T> + Mul<Output = T>>
-{
+use super::base_node::{BaseNode, Numeric};
+
+pub struct BinaryOperator<T: Numeric> {
     left: Box<dyn BaseNode<T>>,
     right: Box<dyn BaseNode<T>>,
     operator: String,
 }
 
-impl<T: Add<Output = T> + Sub<Output = T> + Div<Output = T> + Mul<Output = T>> BinaryOperator<T> {
+impl<T: Numeric> BinaryOperator<T> {
     pub fn new(left: Box<dyn BaseNode<T>>, right: Box<dyn BaseNode<T>>, operator: String) -> Self {
         Self {
             left,
@@ -20,9 +19,7 @@ impl<T: Add<Output = T> + Sub<Output = T> + Div<Output = T> + Mul<Output = T>> B
     }
 }
 
-impl<T: Add<Output = T> + Sub<Output = T> + Div<Output = T> + Mul<Output = T>> BaseNode<T>
-    for BinaryOperator<T>
-{
+impl<T: Numeric> BaseNode<T> for BinaryOperator<T> {
     fn evaluate(&self) -> T {
         match self.operator.as_str() {
             "+" => self.left.evaluate() + self.right.evaluate(),

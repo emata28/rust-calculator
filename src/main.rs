@@ -1,11 +1,16 @@
 mod ast;
-use ast::{binary_operator::BinaryOperator, literal::Literal};
+
+use ast::{binary_operator::BinaryOperator, literal::Literal, Ast};
 pub mod calc;
 
 fn main() {
-    let a = Literal::<i16>::new(1);
-    let b = Literal::<i16>::new(2);
-    let op = BinaryOperator::new(Box::new(a), Box::new(b), String::from("+"));
+    let a = Literal::new(1f32);
+    let b = Literal::new(2f32);
+    let _c = Literal::new(3f32);
 
-    println!("{}", op.eval());
+    let bin_op = BinaryOperator::new(Box::new(a), Box::new(b), "+".to_string());
+
+    println!("{}", bin_op.eval());
+
+    let root = Ast::new(Box::new(_c));
 }
