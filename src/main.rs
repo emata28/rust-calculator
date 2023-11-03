@@ -2,8 +2,6 @@ mod ast;
 
 use ast::{binary_operator::BinaryOperator, literal::Literal, Ast};
 
-pub mod calc;
-
 fn main() {
     let a = Literal::new(1);
     let b = Literal::new(2);
