@@ -21,6 +21,6 @@ impl BaseNode for Literal {
 
 impl Display for Literal {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        write!(f, "{}", self.evaluate().to_string())
+        write!(f, "{}", self.evaluate())
     }
 }
