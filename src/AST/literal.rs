@@ -1,17 +1,26 @@
 use super::base_node::{BaseNode, Numeric};
+use std::fmt::{Display, Formatter, Result as FmtResult};
 
-pub struct Literal<T: Numeric> {
-    value: T,
+pub struct Literal {
+    value: Box<dyn Numeric>,
 }
 
-impl<T: Numeric> Literal<T> {
-    pub fn new(value: T) -> Self {
-        Self { value }
+impl Literal {
+    pub fn new(value: impl Numeric + Copy + 'static) -> Self {
+        Self {
+            value: Box::new(value),
+        }
     }
 }
 
-impl<T: Numeric> BaseNode<T> for Literal<T> {
-    fn evaluate(&self) -> T {
-        self.value
+impl BaseNode for Literal {
+    fn evaluate(&self) -> Box<dyn Numeric> {
+        self.value.clone_box()
+    }
+}
+
+impl Display for Literal {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        write!(f, "{}", self.evaluate().to_string())
     }
 }

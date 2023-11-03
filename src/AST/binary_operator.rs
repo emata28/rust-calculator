@@ -1,32 +1,47 @@
 use super::base_node::{BaseNode, Numeric};
+use std::fmt::{Display, Formatter, Result};
 
-pub struct BinaryOperator<T: Numeric> {
-    left: Box<dyn BaseNode<T>>,
-    right: Box<dyn BaseNode<T>>,
+pub struct BinaryOperator {
+    left: Box<dyn BaseNode>,
+    right: Box<dyn BaseNode>,
     operator: String,
 }
 
-impl<T: Numeric> BinaryOperator<T> {
-    pub fn new(left: Box<dyn BaseNode<T>>, right: Box<dyn BaseNode<T>>, operator: String) -> Self {
+impl BinaryOperator {
+    pub fn new(left: Box<dyn BaseNode>, right: Box<dyn BaseNode>, operator: String) -> Self {
         Self {
             left,
             right,
             operator,
         }
     }
-    pub fn eval(&self) -> T {
-        self.evaluate()
+}
+
+impl BaseNode for BinaryOperator {
+    fn evaluate(&self) -> Box<dyn Numeric> {
+        let left = self.left.evaluate();
+        let right = self.right.evaluate();
+        let operator = &self.operator;
+
+        match operator.as_str() {
+            "+" => left + right,
+            "-" => left - right,
+            "*" => left * right,
+            "/" => left / right,
+            _ => panic!("Unknown operator {}", operator),
+        }
     }
 }
 
-impl<T: Numeric> BaseNode<T> for BinaryOperator<T> {
-    fn evaluate(&self) -> T {
-        match self.operator.as_str() {
-            "+" => self.left.evaluate() + self.right.evaluate(),
-            "-" => self.left.evaluate() - self.right.evaluate(),
-            "*" => self.left.evaluate() * self.right.evaluate(),
-            "/" => self.left.evaluate() / self.right.evaluate(),
-            _ => panic!("Unknown operator"),
-        }
+impl Display for BinaryOperator {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(
+            f,
+            "{} {} {} = {}",
+            self.left,
+            self.operator,
+            self.right,
+            self.evaluate()
+        )
     }
 }
