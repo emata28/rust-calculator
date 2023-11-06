@@ -2,8 +2,9 @@ pub mod base_node;
 pub mod binary_operator;
 pub mod literal;
 mod precedence;
+mod numeric;
 
-pub use base_node::{BaseNode, Numeric};
+pub use base_node::BaseNode;
 pub use binary_operator::BinaryOperator;
 pub use literal::Literal;
 use precedence::precedence;

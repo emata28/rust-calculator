@@ -1,4 +1,5 @@
-use super::base_node::{BaseNode, Numeric};
+use super::base_node::BaseNode;
+use super::numeric::Numeric;
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 pub struct Literal {
