@@ -1,14 +1,14 @@
 pub mod base_node;
 pub mod binary_operator;
 pub mod literal;
-mod precedence;
 mod numeric;
+mod precedence;
 
 pub use base_node::BaseNode;
 pub use binary_operator::BinaryOperator;
 pub use literal::Literal;
+use numeric::Numeric;
 use precedence::precedence;
-
 pub struct Ast {
     pub root: Box<dyn BaseNode>,
 }
@@ -98,9 +98,7 @@ impl Ast {
                 let node = Box::new(BinaryOperator::new(left, right, token));
                 stack.push(node);
             } else {
-                let value = token
-                    .parse::<f64>()
-                    .map_err(|_| format!("Failed to parse token: {}", token))?;
+                let value = token.parse::<Numeric>().unwrap();
                 let node = Box::new(Literal::new(value));
                 stack.push(node);
             }

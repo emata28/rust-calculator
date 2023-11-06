@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 use super::numeric::Numeric;
 
 pub trait BaseNode {
-    fn evaluate(&self) -> Box<dyn Numeric>;
+    fn evaluate(&self) -> Numeric;
 }
 
 impl Display for dyn BaseNode {

@@ -3,20 +3,18 @@ use super::numeric::Numeric;
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 pub struct Literal {
-    value: Box<dyn Numeric>,
+    value: Numeric,
 }
 
 impl Literal {
-    pub fn new(value: impl Numeric + Copy + 'static) -> Self {
-        Self {
-            value: Box::new(value),
-        }
+    pub fn new(value: Numeric) -> Self {
+        Self { value }
     }
 }
 
 impl BaseNode for Literal {
-    fn evaluate(&self) -> Box<dyn Numeric> {
-        self.value.clone_box()
+    fn evaluate(&self) -> Numeric {
+        self.value.clone()
     }
 }
 

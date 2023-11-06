@@ -19,7 +19,7 @@ impl BinaryOperator {
 }
 
 impl BaseNode for BinaryOperator {
-    fn evaluate(&self) -> Box<dyn Numeric> {
+    fn evaluate(&self) -> Numeric {
         let left = self.left.evaluate();
         let right = self.right.evaluate();
         let operator = &self.operator;
