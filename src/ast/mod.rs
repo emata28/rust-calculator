@@ -16,8 +16,8 @@ pub struct Ast {
 impl Ast {
     pub fn new(expression: String) -> Self {
         let tokens = Self::tokenize(expression);
-        let posfix_tokens = Self::infix_to_posfix(tokens);
-        let root: Box<dyn BaseNode> = Self::build_ast(posfix_tokens).unwrap();
+        let postfix_tokens = Self::infix_to_postfix(tokens);
+        let root: Box<dyn BaseNode> = Self::build_ast(postfix_tokens).unwrap();
         Self { root }
     }
 
@@ -53,7 +53,7 @@ impl Ast {
         output
     }
 
-    fn infix_to_posfix(tokens: Vec<String>) -> Vec<String> {
+    fn infix_to_postfix(tokens: Vec<String>) -> Vec<String> {
         let mut output: Vec<String> = Vec::new();
         let mut stack: Vec<String> = Vec::new();
 
@@ -83,11 +83,11 @@ impl Ast {
         output
     }
 
-    pub fn build_ast(posfix_tokens: Vec<String>) -> Result<Box<dyn BaseNode>, String> {
+    pub fn build_ast(postfix_tokens: Vec<String>) -> Result<Box<dyn BaseNode>, String> {
         let mut stack: Vec<Box<dyn BaseNode>> = Vec::new();
         let operators = ["+", "-", "*", "/"];
 
-        for token in posfix_tokens {
+        for token in postfix_tokens {
             if operators.contains(&token.as_str()) {
                 let right = stack
                     .pop()
