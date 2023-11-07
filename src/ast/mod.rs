@@ -2,13 +2,15 @@ pub mod base_node;
 pub mod binary_operator;
 pub mod literal;
 mod numeric;
-mod precedence;
+mod operators;
 
 pub use base_node::BaseNode;
 pub use binary_operator::BinaryOperator;
 pub use literal::Literal;
 use numeric::Numeric;
-use precedence::precedence;
+use operators as Operators;
+use std::fmt::{Display, Formatter, Result as FmtResult};
+
 pub struct Ast {
     pub root: Box<dyn BaseNode>,
 }
@@ -31,15 +33,14 @@ impl Ast {
 
         let mut output: Vec<String> = Vec::new();
         let mut i = 0;
-        while i < tokens.len() {
-            let token = tokens[i].clone();
-            if ["+", "-", "*", "/", "(", ")"].contains(&token.as_str()) {
-                output.push(token);
+        while let Some(token) = tokens.get(i) {
+            if Operators::is_operator(token) {
+                output.push(tokens[i].clone());
             } else {
-                let mut number = token.clone();
+                let mut number = tokens[i].clone();
                 let mut pos = 0;
                 while let Some(next_token) = tokens.get(i + 1 + pos) {
-                    if ["+", "-", "*", "/", "(", ")"].contains(&next_token.as_str()) {
+                    if Operators::is_operator(next_token) {
                         break;
                     }
                     number.push_str(next_token);
@@ -58,16 +59,19 @@ impl Ast {
         let mut stack: Vec<String> = Vec::new();
 
         for token in tokens {
-            if token == "+" || token == "-" || token == "*" || token == "/" {
-                while !stack.is_empty() && precedence(&stack[stack.len() - 1]) >= precedence(&token)
+            if Operators::is_math_operator(&token) {
+                while !stack.is_empty()
+                    && Operators::precedence(&stack[stack.len() - 1])
+                        >= Operators::precedence(&token)
                 {
                     output.push(stack.pop().unwrap());
                 }
                 stack.push(token);
-            } else if token == "(" {
+            } else if Operators::is_left_parenthesis(&token) {
                 stack.push(token);
-            } else if token == ")" {
-                while !stack.is_empty() && stack[stack.len() - 1] != "(" {
+            } else if Operators::is_right_parenthesis(&token) {
+                while !stack.is_empty() && !Operators::is_left_parenthesis(&stack[stack.len() - 1])
+                {
                     output.push(stack.pop().unwrap());
                 }
                 stack.pop();
@@ -83,27 +87,36 @@ impl Ast {
         output
     }
 
-    pub fn build_ast(postfix_tokens: Vec<String>) -> Result<Box<dyn BaseNode>, String> {
+    fn build_ast(postfix_tokens: Vec<String>) -> Result<Box<dyn BaseNode>, String> {
         let mut stack: Vec<Box<dyn BaseNode>> = Vec::new();
-        let operators = ["+", "-", "*", "/"];
 
         for token in postfix_tokens {
-            if operators.contains(&token.as_str()) {
+            if Operators::is_operator(&token) {
                 let right = stack
                     .pop()
-                    .ok_or("Stack underflow: no right operand".to_string())?;
+                    .ok_or_else(|| "Stack underflow: no right operand".to_string())?;
                 let left = stack
                     .pop()
-                    .ok_or("Stack underflow: no left operand".to_string())?;
+                    .ok_or_else(|| "Stack underflow: no left operand".to_string())?;
                 let node = Box::new(BinaryOperator::new(left, right, token));
                 stack.push(node);
             } else {
-                let value = token.parse::<Numeric>().unwrap();
+                let value = token
+                    .parse::<Numeric>()
+                    .expect("Failed to parse token to Numeric");
                 let node = Box::new(Literal::new(value));
                 stack.push(node);
             }
         }
 
-        stack.pop().ok_or("Stack underflow: no result".to_string())
+        stack
+            .pop()
+            .ok_or_else(|| "Stack underflow: no result".to_string())
+    }
+}
+
+impl Display for Ast {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        write!(f, "{}", self.root)
     }
 }
