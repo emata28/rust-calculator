@@ -10,6 +10,10 @@ impl Literal {
     pub fn new(value: Numeric) -> Self {
         Self { value }
     }
+
+    pub fn is_numeric(value: String) -> bool {
+        value.parse::<Numeric>().is_ok()
+    }
 }
 
 impl BaseNode for Literal {

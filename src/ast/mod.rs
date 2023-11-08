@@ -27,7 +27,9 @@ impl Ast {
         let tokens: Vec<String> = expression
             .replace(' ', "")
             .split("")
-            .filter(|s| !s.is_empty())
+            .filter(|s| {
+                Operators::is_operator(&s.to_string()) || Literal::is_numeric(s.to_string())
+            })
             .map(|s| s.to_string())
             .collect();
 
@@ -118,5 +120,104 @@ impl Ast {
 impl Display for Ast {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         write!(f, "{}", self.root)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_tokenize() {
+        let expression = "1+2*3-4/5".to_string();
+        let tokens = Ast::tokenize(expression);
+        assert_eq!(tokens, vec!["1", "+", "2", "*", "3", "-", "4", "/", "5"]);
+    }
+
+    #[test]
+    fn test_tokenize_with_parenthesis() {
+        let expression = "(1+2)*3-(4/5)".to_string();
+        let tokens = Ast::tokenize(expression);
+        assert_eq!(
+            tokens,
+            vec!["(", "1", "+", "2", ")", "*", "3", "-", "(", "4", "/", "5", ")"]
+        );
+    }
+
+    #[test]
+    fn test_tokenize_with_spaces() {
+        let expression = "1 + 2 * 3 - 4 / 5".to_string();
+        let tokens = Ast::tokenize(expression);
+        assert_eq!(tokens, vec!["1", "+", "2", "*", "3", "-", "4", "/", "5"]);
+    }
+
+    #[test]
+    fn test_tokenize_with_spaces_and_parenthesis() {
+        let expression = "( 1 + 2 ) * 3 - ( 4 / 5 )".to_string();
+        let tokens = Ast::tokenize(expression);
+        assert_eq!(
+            tokens,
+            vec!["(", "1", "+", "2", ")", "*", "3", "-", "(", "4", "/", "5", ")"]
+        );
+    }
+
+    #[test]
+    fn test_tokenize_wrong_expression() {
+        let expression = "1+2*3-4/5a".to_string();
+        let tokens = Ast::tokenize(expression);
+        assert_eq!(tokens, vec!["1", "+", "2", "*", "3", "-", "4", "/", "5"]);
+    }
+
+    #[test]
+    fn test_infix_to_postfix() {
+        let tokens = vec!["1", "+", "2", "*", "3", "-", "4", "/", "5"];
+        let postfix_tokens = Ast::infix_to_postfix(tokens.iter().map(|s| s.to_string()).collect());
+        assert_eq!(
+            postfix_tokens,
+            vec!["1", "2", "3", "*", "+", "4", "5", "/", "-"]
+        );
+    }
+
+    #[test]
+    fn test_infix_to_postfix_with_parenthesis() {
+        let tokens = vec![
+            "(", "1", "+", "2", ")", "*", "3", "-", "(", "4", "/", "5", ")",
+        ];
+        let postfix_tokens = Ast::infix_to_postfix(tokens.iter().map(|s| s.to_string()).collect());
+        assert_eq!(
+            postfix_tokens,
+            vec!["1", "2", "+", "3", "*", "4", "5", "/", "-"]
+        );
+    }
+
+    #[test]
+    fn test_infix_to_postfix_with_spaces() {
+        let expression = "1 + 2 * 3 - 4 / 5".to_string();
+        let tokens = Ast::tokenize(expression);
+        let postfix_tokens = Ast::infix_to_postfix(tokens.iter().map(|s| s.to_string()).collect());
+        assert_eq!(
+            postfix_tokens,
+            vec!["1", "2", "3", "*", "+", "4", "5", "/", "-"]
+        );
+    }
+
+    #[test]
+    fn test_infix_to_postfix_with_spaces_and_parenthesis() {
+        let expression = "( 1 + 2 ) * 3 - ( 4 / 5 )".to_string();
+        let tokens = Ast::tokenize(expression);
+        let postfix_tokens = Ast::infix_to_postfix(tokens.iter().map(|s| s.to_string()).collect());
+        assert_eq!(
+            postfix_tokens,
+            vec!["1", "2", "+", "3", "*", "4", "5", "/", "-"]
+        );
+    }
+
+    #[test]
+    fn test_build_ast() {
+        let expression = "1+2*3-4/5".to_string();
+        let tokens = Ast::tokenize(expression);
+        let postfix_tokens = Ast::infix_to_postfix(tokens.iter().map(|s| s.to_string()).collect());
+        let ast = Ast::build_ast(postfix_tokens.iter().map(|s| s.to_string()).collect()).unwrap();
+        assert_eq!(ast.evaluate(), Numeric::Integer(7));
     }
 }

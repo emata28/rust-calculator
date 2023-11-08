@@ -2,6 +2,7 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 use std::ops::{Add, Div, Mul, Sub};
 use std::str::FromStr;
 
+#[derive(Debug, PartialEq)]
 pub enum Numeric {
     Float(f64),
     Integer(i64),
